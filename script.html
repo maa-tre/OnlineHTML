@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Login — Animated Message</title>
+<style>
+  body { font-family: system-ui, Arial, sans-serif; padding:24px; }
+  form { max-width:420px; margin-bottom:20px; }
+  label { display:block; margin-bottom:10px; }
+  input[type="text"], input[type="password"]{ width:100%; padding:8px; box-sizing:border-box; }
+
+  #result {
+    margin-top:18px;
+    font-size:28px;
+    font-weight:700;
+    color:#c62828;
+    white-space:pre; /* preserve spaces */
+    min-height:40px;
+  }
+
+  /* per-letter animated slide-in (left → right) */
+  .letter {
+    display:inline-block;
+    opacity:0;
+    transform:translateX(-28px) rotate(-6deg) scale(.98);
+    animation-name:slideIn;
+    animation-duration:480ms;
+    animation-fill-mode:forwards;
+    animation-timing-function:cubic-bezier(.2,.9,.2,1);
+    will-change:transform,opacity;
+  }
+
+  @keyframes slideIn {
+    to { opacity:1; transform:translateX(0) rotate(0) scale(1); }
+  }
+
+  /* invalid password style + subtle shake */
+  .invalid {
+    color:#8b0000;
+    font-size:18px;
+    font-weight:700;
+    display:inline-block;
+    animation:shake .36s;
+  }
+  @keyframes shake {
+    10%{transform:translateX(-6px)}30%{transform:translateX(6px)}50%{transform:translateX(-4px)}
+    70%{transform:translateX(4px)}100%{transform:translateX(0)}
+  }
+</style>
+</head>
+<body>
+  <h2>Login</h2>
+
+  <form id="loginForm" onsubmit="validateForm(event)" novalidate>
+    <label>First name
+      <input id="fname" type="text" name="first_name" placeholder="First name" required>
+    </label>
+
+    <label>Last name
+      <input id="lname" type="text" name="last_name" placeholder="Last name" required>
+    </label>
+
+    <label>Password
+      <input id="password" type="password" name="password" placeholder="Enter password" required>
+    </label>
+
+    <button type="submit">Login</button>
+  </form>
+
+  <div id="result" aria-live="polite"></div>
+
+<script>
+const form = document.getElementById('loginForm');
+const result = document.getElementById('result');
+let clearTimers = [];
+
+function clearResult(){
+  // clear running timeouts and remove content/classes
+  clearTimers.forEach(id => clearTimeout(id));
+  clearTimers = [];
+  result.innerHTML = '';
+  result.className = '';
+}
+
+function validateForm(e){
+  e.preventDefault();
+  clearResult();
+  const pwd = document.getElementById('password').value || '';
+  if (pwd === '1111') {
+    animateText("You are Chutiya man!!!");
+  } else {
+    result.textContent = "Invalid password";
+    result.classList.add('invalid');
+  }
+}
+
+function animateText(text){
+  const delayPerChar = 60; // ms
+  for (let i = 0; i < text.length; i++){
+    const ch = text[i];
+    const span = document.createElement('span');
+    span.className = 'letter';
+    // preserve spaces correctly
+    span.textContent = (ch === ' ') ? '\u00A0' : ch;
+    // stagger with inline animation delay
+    span.style.animationDelay = (i * delayPerChar) + 'ms';
+    result.appendChild(span);
+  }
+  // optional cleanup timer (keeps message visible)
+  const total = text.length * delayPerChar + 700;
+  clearTimers.push(setTimeout(()=>{}, total));
+}
+
+// expose validateForm for inline onsubmit
+window.validateForm = validateForm;
+</script>
+</body>
+</html>
